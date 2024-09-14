@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package auth;
+option go_package = "pkg/auth";
+
+service AuthService {
+  rpc Register(RegisterRequest) returns (RegisterResponse) {};
+  rpc Login(LoginRequest) returns (LoginResponse) {};
+  rpc Refresh(RefreshRequest) returns (RefreshResponse) {};
+  rpc Logout(LogoutRequest) returns (LogoutResponse) {};
+}
+
+message RegisterRequest {
+  string name = 1;
+  string username = 2;
+  string password = 3;
+  string email = 4;
+}
+
+message RegisterResponse {
+  bool success = 1;
+  string message = 2;
+}
+
+message LoginRequest {
+  oneof login {
+    string username = 1;
+    string email = 2;
+  }
+  string password = 3;
+}
+
+message TokenSet {
+  string access_token = 1;
+  string refresh_token = 2;
+  string session_token = 3;
+}
+
+message LoginResponse {
+  bool success = 1;
+  string message = 2;
+  TokenSet token_set = 3;
+}
+
+message RefreshRequest {
+  string refresh_token = 1;
+}
+
+message RefreshResponse {
+  bool success = 1;
+  string message = 2;
+  string access_token = 3;
+}
+
+message LogoutRequest {
+  string refresh_token = 1;
+}
+
+message LogoutResponse {
+  bool success = 1;
+  string message = 2;
+}
