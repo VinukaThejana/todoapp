@@ -7,6 +7,7 @@ import (
 	"github.com/VinukaThejana/todoapp/internal/auth/tokens"
 	env "github.com/VinukaThejana/todoapp/internal/config"
 	"github.com/VinukaThejana/todoapp/internal/database"
+	rdb "github.com/VinukaThejana/todoapp/internal/redis"
 	pb "github.com/VinukaThejana/todoapp/pkg/auth"
 	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
@@ -169,5 +170,41 @@ func (s *Server) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refre
 		Success:     true,
 		Message:     "Access token refreshed successfully",
 		AccessToken: accessToken.Token,
+	}, nil
+}
+
+// Logout is a gRPC endpoint to logout the user
+func (s *Server) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
+	rt := tokens.NewRefreshToken(s.E, s.DB, s.R)
+	rtd, err := rt.Validate(ctx, req.RefreshToken)
+	if err != nil {
+		return &pb.LogoutResponse{
+			Success: false,
+			Message: "Invalid refresh token",
+		}, status.Error(codes.Unauthenticated, "invalid refresh token")
+	}
+
+	val := s.R.Get(ctx, rdb.RefreshTokenKey(rtd.JTI)).Val()
+	if val == "" {
+		return &pb.LogoutResponse{
+			Success: false,
+			Message: "Invalid refresh token",
+		}, status.Error(codes.Unauthenticated, "invalid refresh token")
+	}
+
+	pipe := s.R.Pipeline()
+	pipe.Del(ctx, rdb.RefreshTokenKey(rtd.JTI))
+	pipe.Del(ctx, rdb.AccessTokenKey(val))
+	_, err = pipe.Exec(ctx)
+	if err != nil {
+		return &pb.LogoutResponse{
+			Success: false,
+			Message: "Failed to delete tokens",
+		}, status.Error(codes.Internal, "failed to delete tokens")
+	}
+
+	return &pb.LogoutResponse{
+		Success: true,
+		Message: "User logged out successfully",
 	}, nil
 }
