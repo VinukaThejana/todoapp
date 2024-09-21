@@ -39,6 +39,7 @@ func NewRefreshToken(e *env.Env, db *gorm.DB, rdb *redis.Client) *RefreshToken {
 
 // Create creates a new refresh token
 func (rt *RefreshToken) Create(ctx context.Context, userID uint) (rtd *RefreshTokenDetails, err error) {
+	rtd = &RefreshTokenDetails{}
 	now := time.Now()
 
 	rtd.Iat = now.Unix()
