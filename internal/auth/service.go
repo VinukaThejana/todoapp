@@ -7,6 +7,7 @@ import (
 	env "github.com/VinukaThejana/todoapp/internal/config"
 	"github.com/VinukaThejana/todoapp/internal/database"
 	pb "github.com/VinukaThejana/todoapp/pkg/auth"
+	"github.com/redis/go-redis/v9"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -18,13 +19,15 @@ type Server struct {
 	pb.UnimplementedAuthServiceServer
 	E  *env.Env
 	DB *gorm.DB
+	R  *redis.Client
 }
 
 // NewServer creates a new auth server
-func NewServer(e *env.Env, db *gorm.DB) *Server {
+func NewServer(e *env.Env, db *gorm.DB, r *redis.Client) *Server {
 	return &Server{
 		E:  e,
 		DB: db,
+		R:  r,
 	}
 }
 
