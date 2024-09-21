@@ -144,3 +144,30 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 		},
 	}, nil
 }
+
+// Refresh is a gRPC endpoint to refresh the access token
+func (s *Server) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
+	rt := tokens.NewRefreshToken(s.E, s.DB, s.R)
+	rtd, err := rt.Validate(ctx, req.RefreshToken)
+	if err != nil {
+		return &pb.RefreshResponse{
+			Success: false,
+			Message: "Invalid refresh token",
+		}, status.Error(codes.Unauthenticated, "invalid refresh token")
+	}
+
+	at := tokens.NewAccessToken(s.E, s.DB, s.R)
+	accessToken, err := at.Create(ctx, rtd.Sub, rtd.JTI)
+	if err != nil {
+		return &pb.RefreshResponse{
+			Success: false,
+			Message: "Failed to create access token",
+		}, status.Error(codes.Internal, "failed to create access token")
+	}
+
+	return &pb.RefreshResponse{
+		Success:     true,
+		Message:     "Access token refreshed successfully",
+		AccessToken: accessToken.Token,
+	}, nil
+}
