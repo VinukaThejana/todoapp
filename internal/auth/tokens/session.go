@@ -2,6 +2,7 @@ package tokens
 
 import (
 	"context"
+	"errors"
 	"time"
 
 	env "github.com/VinukaThejana/todoapp/internal/config"
@@ -67,6 +68,38 @@ func (st *SessionToken) Create(
 	if err != nil {
 		return nil, err
 	}
+
+	return std, nil
+}
+
+// Validate validates the session token
+func (st *SessionToken) Validate(ctx context.Context, token string) (std *SessionTokenDetails, err error) {
+	std = &SessionTokenDetails{}
+
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+
+		return []byte(st.E.SessionSecret), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	std.Sub = uint(claims["sub"].(float64))
+	std.JTI = claims["jti"].(string)
+	std.Iat = int64(claims["iat"].(float64))
+	std.ExpiresIn = int64(claims["exp"].(float64))
+	std.Email = claims["email"].(string)
+	std.Username = claims["username"].(string)
+	std.Name = claims["name"].(string)
+	std.Token = token
 
 	return std, nil
 }
