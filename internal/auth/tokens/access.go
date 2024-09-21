@@ -112,3 +112,48 @@ func (at *AccessToken) Create(
 
 	return atd, nil
 }
+
+// Validate validates an access token
+func (at *AccessToken) Validate(
+	ctx context.Context,
+	token string,
+) (atd *AccessTokenDetails, err error) {
+	atd = &AccessTokenDetails{}
+
+	publicKey, err := base64.StdEncoding.DecodeString(at.E.AccessTokenPublicKey)
+	if err != nil {
+	}
+	if err != nil {
+		return nil, err
+	}
+	key, err := jwt.ParseRSAPublicKeyFromPEM(publicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+
+		return key, nil
+	})
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	atd.Sub = uint(claims["sub"].(float64))
+	atd.JTI = claims["jti"].(string)
+	atd.Iat = int64(claims["iat"].(float64))
+	atd.ExpiresIn = int64(claims["exp"].(float64))
+	atd.Token = token
+
+	val := at.R.Get(ctx, rdb.AccessTokenKey(atd.JTI)).Val()
+	if val == "" {
+		return nil, errors.New("access token not found")
+	}
+
+	return atd, nil
+}
