@@ -48,9 +48,9 @@ type Todo struct {
 
 // Session is a model for the session table
 type Session struct {
-	ID        uint `gorm:"primarykey"`
+	ID        string `gorm:"primarykey"`
+	ExpiresAt int64  `gorm:"not null"`
+	UserID    uint   `gorm:"not null"`
 	LoginAt   time.Time
-	ExpiresAt int64 `gorm:"not null"`
-	UserID    uint  `gorm:"not null"`
-	User      User  `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	User      User `gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
