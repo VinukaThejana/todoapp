@@ -11,8 +11,8 @@ import (
 	"google.golang.org/grpc"
 )
 
-// GracefulShutdown gracefully shuts down the gRPC server
-func GracefulShutdown(s *grpc.Server, timeout ...time.Duration) {
+// GracefulShutdowngRPC gracefully shuts down the gRPC server
+func GracefulShutdowngRPC(s *grpc.Server, timeout ...time.Duration) {
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
 

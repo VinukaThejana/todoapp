@@ -56,5 +56,5 @@ func main() {
 		}
 	}()
 
-	lib.GracefulShutdown(s)
+	lib.GracefulShutdowngRPC(s)
 }
