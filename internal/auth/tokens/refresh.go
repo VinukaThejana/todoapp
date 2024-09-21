@@ -115,3 +115,42 @@ func (rt *RefreshToken) Create(ctx context.Context, userID uint) (rtd *RefreshTo
 
 	return rtd, nil
 }
+
+// Validate validates a refresh token
+func (rt *RefreshToken) Validate(ctx context.Context, token string) (rtd *RefreshTokenDetails, err error) {
+	rtd = &RefreshTokenDetails{}
+
+	publicKey, err := base64.StdEncoding.DecodeString(rt.E.RefreshTokenPublicKey)
+	if err != nil {
+		return nil, err
+	}
+	key, err := jwt.ParseRSAPublicKeyFromPEM(publicKey)
+	if err != nil {
+		return nil, err
+	}
+
+	parsedToken, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
+			return nil, errors.New("unexpected signing method")
+		}
+
+		return key, nil
+	})
+
+	claims, ok := parsedToken.Claims.(jwt.MapClaims)
+	if !ok || !parsedToken.Valid {
+		return nil, errors.New("invalid token")
+	}
+
+	rtd.Sub = uint(claims["sub"].(float64))
+	rtd.JTI = claims["jti"].(string)
+	rtd.Iat = int64(claims["iat"].(float64))
+	rtd.ExpiresIn = int64(claims["exp"].(float64))
+
+	val := rt.R.Get(ctx, rdb.RefreshTokenKey(rtd.JTI)).Val()
+	if val == "" {
+		return nil, errors.New("invalid token")
+	}
+
+	return rtd, nil
+}
