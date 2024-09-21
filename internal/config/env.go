@@ -22,6 +22,7 @@ type Env struct {
 	AccessTokenPrivateKey  string        `mapstructure:"ACCESS_TOKEN_PRIVATE_KEY" validate:"required"`
 	AccessTokenPublicKey   string        `mapstructure:"ACCESS_TOKEN_PUBLIC_KEY" validate:"required"`
 	Environ                string        `mapstructure:"ENVIRON" validate:"required,oneof=dev stg prod"`
+	SessionSecret          string        `mapstructure:"SESSION_SECRET" validate:"required"`
 	AccessTokenExpiresIn   time.Duration `mapstructure:"ACCESS_TOKEN_EXPIRES_IN" validate:"required"`
 	RefreshTokenExpiresIn  time.Duration `mapstructure:"REFRESH_TOKEN_EXPIRES_IN" validate:"required"`
 }
