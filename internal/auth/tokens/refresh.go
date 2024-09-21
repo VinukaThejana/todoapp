@@ -24,12 +24,8 @@ type RefreshToken struct {
 
 // RefreshTokenDetails is a struct to represent the details of a refresh token
 type RefreshTokenDetails struct {
-	Token          string
-	JTI            string
+	tokendetails
 	AccessTokenJTI string
-	ExpiresIn      int64
-	Iat            int64
-	Sub            uint
 }
 
 // NewRefreshToken creates a new refresh token
