@@ -38,6 +38,11 @@ func Init(
 		})
 
 		r.Group(func(r chi.Router) {
+			r.Use(m.RefreshTokenPresent)
+			r.Patch("/refresh", lib.WrapHandlerWAuthClient(
+				auth.Login,
+				acm, e, db, rdb,
+			))
 		})
 	})
 
