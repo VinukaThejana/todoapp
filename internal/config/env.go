@@ -9,7 +9,9 @@ import (
 // Env is the struct that holds the environment variables
 type Env struct {
 	Domain                 string        `mapstructure:"DOMAIN" validate:"required"`
+	AuthgRPCDomain         string        `mapstructure:"AUTH_GRPC_DOMAIN" validate:"required"`
 	AuthgRPCPort           string        `mapstructure:"AUTH_GRPC_PORT" validate:"required"`
+	TodoGRPCDomain         string        `mapstructure:"TODO_GRPC_DOMAIN" validate:"required"`
 	TodogRPCPort           string        `mapstructure:"TODO_GRPC_PORT" validate:"required"`
 	APIGatewayPort         string        `mapstructure:"API_GATEWAY_PORT" validate:"required"`
 	DatabaseURL            string        `mapstructure:"DATABASE_URL" validate:"required"`
