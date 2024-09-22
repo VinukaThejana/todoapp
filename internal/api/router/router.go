@@ -43,6 +43,10 @@ func Init(
 				auth.Login,
 				acm, e, db, rdb,
 			))
+			r.Delete("/logout", lib.WrapHandlerWAuthClient(
+				auth.Logout,
+				acm, e, db, rdb,
+			))
 		})
 	})
 
