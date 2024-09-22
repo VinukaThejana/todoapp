@@ -3,8 +3,10 @@ package router
 
 import (
 	"github.com/VinukaThejana/todoapp/internal/api/grpc"
+	"github.com/VinukaThejana/todoapp/internal/api/handler/auth"
 	m "github.com/VinukaThejana/todoapp/internal/api/middleware"
 	env "github.com/VinukaThejana/todoapp/internal/config"
+	"github.com/VinukaThejana/todoapp/internal/lib"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/redis/go-redis/v9"
@@ -25,6 +27,14 @@ func Init(
 	r.Route("/auth", func(r chi.Router) {
 		r.Group(func(r chi.Router) {
 			r.Use(m.ContentJSON)
+			r.Post("/register", lib.WrapHandlerWAuthClient(
+				auth.Register,
+				acm, e, db, rdb,
+			))
+			r.Post("/login", lib.WrapHandlerWAuthClient(
+				auth.Login,
+				acm, e, db, rdb,
+			))
 		})
 
 		r.Group(func(r chi.Router) {
