@@ -71,6 +71,8 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 	}, nil
 }
 
+// Login is a gRPC endpoint to login a user
+// returns Internal, NotFound, Unauthenticated, InvalidArgument, nil
 func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user := &database.User{}
 	var err error
