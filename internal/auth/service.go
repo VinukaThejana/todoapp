@@ -34,6 +34,7 @@ func NewServer(e *env.Env, db *gorm.DB, r *redis.Client) *Server {
 }
 
 // Register is a gRPC endpoint to register a new user
+// returns Internal, AlreadyExists, nil
 func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	user := &database.User{
 		Name:     req.Name,
