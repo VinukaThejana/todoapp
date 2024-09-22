@@ -2,10 +2,10 @@ package handler
 
 import (
 	"net/http"
-	"regexp"
 
 	"github.com/VinukaThejana/todoapp/internal/api/grpc"
 	env "github.com/VinukaThejana/todoapp/internal/config"
+	"github.com/VinukaThejana/todoapp/internal/lib"
 	"github.com/VinukaThejana/todoapp/pkg/auth"
 	"github.com/bytedance/sonic"
 	"github.com/go-playground/validator/v10"
@@ -31,33 +31,15 @@ func Register(
 
 	type body struct {
 		Email    string `json:"email" validate:"required,email"`
-		Username string `json:"username" validate:"required,alphanum,min=4,max=15"`
+		Username string `json:"username" validate:"required,alphanum,min=4,max=15,username"`
 		Name     string `json:"name" validate:"required,min=4,max=30"`
-		Password string `json:"password" validate:"required,min=8,max=100,pass"`
+		Password string `json:"password" validate:"required,min=8,max=100,password"`
 	}
 
 	validate := validator.New()
 
-	validate.RegisterValidation("pass", func(fl validator.FieldLevel) bool {
-		password := fl.Field().String()
-		// Password must contain at least one uppercase letter
-		if !regexp.MustCompile(`[A-Z]`).MatchString(password) {
-			return false
-		}
-		// Password must contain at least one lowercase letter
-		if !regexp.MustCompile(`[a-z]`).MatchString(password) {
-			return false
-		}
-		// Password must contain at least one digit
-		if !regexp.MustCompile(`[0-9]`).MatchString(password) {
-			return false
-		}
-		// Password must contain at least one special character
-		if !regexp.MustCompile(`[!@#$%^&*(),.?":{}|<>]`).MatchString(password) {
-			return false
-		}
-		return true
-	})
+	validate.RegisterValidation("username", lib.ValidateUsername)
+	validate.RegisterValidation("password", lib.ValidatePassword)
 
 	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
 	defer r.Body.Close()
