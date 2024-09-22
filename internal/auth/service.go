@@ -178,6 +178,7 @@ func (s *Server) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refre
 }
 
 // Logout is a gRPC endpoint to logout the user
+// returns Internal, Unauthenticated, nil
 func (s *Server) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutResponse, error) {
 	rt := tokens.NewRefreshToken(s.E, s.DB, s.R)
 	rtd, err := rt.Validate(ctx, req.RefreshToken)
