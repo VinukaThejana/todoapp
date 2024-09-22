@@ -43,3 +43,25 @@ func ValiateEmailOrUsername(fl validator.FieldLevel) bool {
 
 	return regex.MatchString(username)
 }
+
+// ValidatePassword is a custom validator for validating password
+func ValidatePassword(fl validator.FieldLevel) bool {
+	password := fl.Field().String()
+	// Password must contain at least one uppercase letter
+	if !regexp.MustCompile(`[A-Z]`).MatchString(password) {
+		return false
+	}
+	// Password must contain at least one lowercase letter
+	if !regexp.MustCompile(`[a-z]`).MatchString(password) {
+		return false
+	}
+	// Password must contain at least one digit
+	if !regexp.MustCompile(`[0-9]`).MatchString(password) {
+		return false
+	}
+	// Password must contain at least one special character
+	if !regexp.MustCompile(`[!@#$%^&*(),.?":{}|<>]`).MatchString(password) {
+		return false
+	}
+	return true
+}
