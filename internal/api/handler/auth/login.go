@@ -1,10 +1,11 @@
-package handler
+package auth
 
 import (
 	"net/http"
 	"time"
 
 	"github.com/VinukaThejana/todoapp/internal/api/grpc"
+	"github.com/VinukaThejana/todoapp/internal/api/handler"
 	env "github.com/VinukaThejana/todoapp/internal/config"
 	"github.com/VinukaThejana/todoapp/internal/enums"
 	"github.com/VinukaThejana/todoapp/internal/lib"
@@ -51,14 +52,14 @@ func Login(
 	err := sonic.ConfigDefault.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
 		log.Error().Err(err)
-		jsonresponse(w, http.StatusBadRequest, "Invalid request body")
+		handler.JSONr(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	err = validate.Struct(reqBody)
 	if err != nil {
 		log.Error().Err(err)
-		jsonresponse(w, http.StatusBadRequest, "Invalid request body")
+		handler.JSONr(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -82,22 +83,22 @@ func Login(
 		st, ok := status.FromError(err)
 		if !ok {
 			log.Error().Err(err)
-			jsonresponse(w, http.StatusInternalServerError, "Internal server error")
+			handler.JSONr(w, http.StatusInternalServerError, "Internal server error")
 			return
 		}
 
 		switch st.Code() {
 		case codes.InvalidArgument:
-			jsonresponse(w, http.StatusBadRequest, "Invalid request body")
+			handler.JSONr(w, http.StatusBadRequest, "Invalid request body")
 			return
 		case codes.NotFound:
-			jsonresponse(w, http.StatusNotFound, "User not found")
+			handler.JSONr(w, http.StatusNotFound, "User not found")
 			return
 		case codes.Unauthenticated:
-			jsonresponse(w, http.StatusUnauthorized, "Invalid password")
+			handler.JSONr(w, http.StatusUnauthorized, "Invalid password")
 			return
 		default:
-			jsonresponse(w, http.StatusInternalServerError, "Internal server error")
+			handler.JSONr(w, http.StatusInternalServerError, "Internal server error")
 			return
 		}
 	}
@@ -123,5 +124,5 @@ func Login(
 		Domain:   e.Domain,
 	})
 
-	jsonresponse(w, http.StatusOK, "Login successful")
+	handler.JSONr(w, http.StatusOK, "Login successful")
 }

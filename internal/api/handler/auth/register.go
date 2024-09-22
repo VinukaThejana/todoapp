@@ -1,9 +1,10 @@
-package handler
+package auth
 
 import (
 	"net/http"
 
 	"github.com/VinukaThejana/todoapp/internal/api/grpc"
+	"github.com/VinukaThejana/todoapp/internal/api/handler"
 	env "github.com/VinukaThejana/todoapp/internal/config"
 	"github.com/VinukaThejana/todoapp/internal/lib"
 	"github.com/VinukaThejana/todoapp/pkg/auth"
@@ -49,14 +50,14 @@ func Register(
 	err := sonic.ConfigDefault.NewDecoder(r.Body).Decode(&reqBody)
 	if err != nil {
 		log.Error().Err(err)
-		jsonresponse(w, http.StatusBadRequest, "Invalid request body")
+		handler.JSONr(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
 	err = validate.Struct(reqBody)
 	if err != nil {
 		log.Error().Err(err)
-		jsonresponse(w, http.StatusBadRequest, "Invalid request body")
+		handler.JSONr(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 
@@ -70,19 +71,19 @@ func Register(
 		st, ok := status.FromError(err)
 		if !ok {
 			log.Error().Err(err)
-			jsonresponse(w, http.StatusInternalServerError, "Internal server error")
+			handler.JSONr(w, http.StatusInternalServerError, "Internal server error")
 			return
 		}
 
 		switch st.Code() {
 		case codes.AlreadyExists:
-			jsonresponse(w, http.StatusConflict, "User already exists")
+			handler.JSONr(w, http.StatusConflict, "User already exists")
 			return
 		default:
-			jsonresponse(w, http.StatusInternalServerError, "Internal server error")
+			handler.JSONr(w, http.StatusInternalServerError, "Internal server error")
 			return
 		}
 	}
 
-	jsonresponse(w, http.StatusCreated, "User created")
+	handler.JSONr(w, http.StatusCreated, "User created")
 }
