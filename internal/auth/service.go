@@ -150,6 +150,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 }
 
 // Refresh is a gRPC endpoint to refresh the access token
+// returns Internal, Unauthenticated, nil
 func (s *Server) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.RefreshResponse, error) {
 	rt := tokens.NewRefreshToken(s.E, s.DB, s.R)
 	rtd, err := rt.Validate(ctx, req.RefreshToken)
