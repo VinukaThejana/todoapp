@@ -28,6 +28,7 @@ var (
 	db  *gorm.DB
 	rdb *redis.Client
 	acm *grpc.AuthClientManager
+	tcm *grpc.TodoClientManager
 	err error
 )
 
@@ -48,10 +49,19 @@ func init() {
 		DialTimeout: 5 * time.Second,
 		UseTLS:      isProd,
 	}
+	todoCfg := grpc.ClientConfig{
+		Address:     fmt.Sprintf("%s:%s", e.TodoGRPCDomain, e.TodogRPCPort),
+		DialTimeout: 5 * time.Second,
+		UseTLS:      isProd,
+	}
 
 	acm, err = grpc.NewAuthClientManager(authCfg)
 	if err != nil {
 		logger.Errorf(fmt.Errorf("failed to create auth client manager: %w", err))
+	}
+	tcm, err = grpc.NewTodoClientManager(todoCfg)
+	if err != nil {
+		logger.Errorf(fmt.Errorf("failed to create todo client manager: %w", err))
 	}
 }
 
@@ -60,7 +70,7 @@ func main() {
 		acm.Close()
 	}()
 
-	r := router.Init(acm, e, db, rdb)
+	r := router.Init(acm, tcm, e, db, rdb)
 
 	server := &http.Server{
 		Addr:    ":" + e.APIGatewayPort,

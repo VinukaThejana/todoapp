@@ -15,6 +15,7 @@ import (
 
 func Init(
 	acm *grpc.AuthClientManager,
+	tcm *grpc.TodoClientManager,
 	e *env.Env,
 	db *gorm.DB,
 	rdb *redis.Client,
