@@ -63,4 +63,5 @@ message ValidateRequest { string access_token = 1; }
 message ValidateResponse {
   bool success = 1;
   bool is_valid = 2;
+  string user_id = 3;
 }
