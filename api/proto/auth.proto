@@ -8,6 +8,7 @@ service AuthService {
   rpc Login(LoginRequest) returns (LoginResponse) {};
   rpc Refresh(RefreshRequest) returns (RefreshResponse) {};
   rpc Logout(LogoutRequest) returns (LogoutResponse) {};
+  rpc Validate(ValidateRequest) returns (ValidateResponse) {};
 }
 
 message RegisterRequest {
@@ -42,9 +43,7 @@ message LoginResponse {
   TokenSet token_set = 3;
 }
 
-message RefreshRequest {
-  string refresh_token = 1;
-}
+message RefreshRequest { string refresh_token = 1; }
 
 message RefreshResponse {
   bool success = 1;
@@ -52,11 +51,16 @@ message RefreshResponse {
   string access_token = 3;
 }
 
-message LogoutRequest {
-  string refresh_token = 1;
-}
+message LogoutRequest { string refresh_token = 1; }
 
 message LogoutResponse {
   bool success = 1;
   string message = 2;
+}
+
+message ValidateRequest { string access_token = 1; }
+
+message ValidateResponse {
+  bool success = 1;
+  bool is_valid = 2;
 }
