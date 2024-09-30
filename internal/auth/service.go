@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/VinukaThejana/todoapp/internal/auth/tokens"
 	env "github.com/VinukaThejana/todoapp/internal/config"
@@ -211,5 +212,24 @@ func (s *Server) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutR
 	return &pb.LogoutResponse{
 		Success: true,
 		Message: "User logged out successfully",
+	}, nil
+}
+
+// Validate is a gRPC endpoint to validate the access token
+// returns Unauthenticated, nil
+func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.ValidateResponse, error) {
+	at := tokens.NewAccessToken(s.E, s.DB, s.R)
+	atd, err := at.Validate(ctx, req.AccessToken)
+	if err != nil {
+		return &pb.ValidateResponse{
+			Success: false,
+			IsValid: false,
+		}, status.Error(codes.Unauthenticated, "invalid access token")
+	}
+
+	return &pb.ValidateResponse{
+		Success: true,
+		IsValid: true,
+		UserId:  fmt.Sprint(atd.Sub),
 	}, nil
 }
