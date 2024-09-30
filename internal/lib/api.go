@@ -22,6 +22,33 @@ func WrapHandlerWAuthClient(
 	}
 }
 
+// WrapHandlerWTodoClient wraps the handler function with the environment, database, Redis client, and todo service client.
+func WrapHandlerWTodoClient(
+	h func(http.ResponseWriter, *http.Request, *grpc.TodoClientManager, *env.Env, *gorm.DB, *redis.Client),
+	tcm *grpc.TodoClientManager,
+	e *env.Env,
+	db *gorm.DB,
+	rdb *redis.Client,
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		h(w, r, tcm, e, db, rdb)
+	}
+}
+
+// WrapHandler wraps the handler function with the environment, database, Redis client, and both the authentication and todo service clients.
+func WrapHandler(
+	h func(http.ResponseWriter, *http.Request, *grpc.AuthClientManager, *grpc.TodoClientManager, *env.Env, *gorm.DB, *redis.Client),
+	acm *grpc.AuthClientManager,
+	tcm *grpc.TodoClientManager,
+	e *env.Env,
+	db *gorm.DB,
+	rdb *redis.Client,
+) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		h(w, r, acm, tcm, e, db, rdb)
+	}
+}
+
 // WrapMiddleware wraps the middleware function with the environment, database, and Redis client.
 func WrapMiddleware(
 	m func(http.Handler, *env.Env, *gorm.DB, *redis.Client) http.Handler,
