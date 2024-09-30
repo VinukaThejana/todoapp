@@ -6,12 +6,17 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/VinukaThejana/todoapp/internal/api/grpc"
+	"github.com/VinukaThejana/todoapp/pkg/auth"
 	"github.com/bytedance/sonic"
 	"github.com/rs/zerolog/log"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 const (
 	RefreshToken = "todoapp_refresh_token"
+	UserID       = "user_id"
 )
 
 // ContentJSON is a middleware that checks if the content type is application/json
@@ -52,8 +57,9 @@ func RefreshTokenPresent(next http.Handler) http.Handler {
 	})
 }
 
-// AuthTokenPresent is a middleware that checks if the auth token is present in the request
-func AuthTokenPresent(next http.Handler) http.Handler {
+// Auth is a middleware that validates the access token and assigns the user id of the requesting
+// user to the context if the access token is valid.
+func Auth(next http.Handler, acm *grpc.AuthClientManager) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		authToken := r.Header.Get("Authorization")
 		if authToken == "" {
@@ -62,7 +68,28 @@ func AuthTokenPresent(next http.Handler) http.Handler {
 			return
 		}
 
-		ctx := context.WithValue(r.Context(), "todoapp_access_token", authToken)
+		res, err := acm.Client().Validate(r.Context(), &auth.ValidateRequest{
+			AccessToken: authToken,
+		})
+		if err != nil || !res.IsValid || !res.Success {
+			st, ok := status.FromError(err)
+			if !ok {
+				log.Error().Err(err)
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			switch st.Code() {
+			case codes.Unauthenticated:
+				w.WriteHeader(http.StatusUnauthorized)
+				return
+			default:
+				w.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+		}
+
+		ctx := context.WithValue(r.Context(), UserID, res.UserId)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

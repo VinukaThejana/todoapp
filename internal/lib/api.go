@@ -60,3 +60,16 @@ func WrapMiddleware(
 		return m(h, e, db, rdb)
 	}
 }
+
+// WrapMiddlewareWAuth wraps the middleware function with the environment, database, Redis client, and authentication service client.
+func WrapMiddlewareWAuth(
+	m func(http.Handler, *grpc.AuthClientManager, *env.Env, *gorm.DB, *redis.Client) http.Handler,
+	acm *grpc.AuthClientManager,
+	e *env.Env,
+	db *gorm.DB,
+	rdb *redis.Client,
+) func(http.Handler) http.Handler {
+	return func(h http.Handler) http.Handler {
+		return m(h, acm, e, db, rdb)
+	}
+}
