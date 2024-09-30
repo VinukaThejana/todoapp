@@ -30,8 +30,8 @@ var Tables = []struct {
 type User struct {
 	gorm.Model
 	Name     string `gorm:"not null"`
-	Email    string `gorm:"type:varchar(255);unique_index"`
-	Username string `gorm:"type:varchar(100);unique_index"`
+	Email    string `gorm:"type:varchar(255);uniqueIndex"`
+	Username string `gorm:"type:varchar(100);uniqueIndex"`
 	Password string `gorm:"not null"`
 }
 
