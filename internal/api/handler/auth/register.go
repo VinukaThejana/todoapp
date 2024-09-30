@@ -27,7 +27,7 @@ func Register(
 	rdb *redis.Client,
 ) {
 	const (
-		maxRequestBodySize = 1 << 6
+		maxRequestBodySize = 1 << 8
 	)
 
 	type body struct {
