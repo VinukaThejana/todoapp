@@ -125,6 +125,7 @@ func Login(
 		Path:     "/",
 		HttpOnly: false,
 		MaxAge:   int(e.RefreshTokenExpiresIn.Seconds()),
+		Expires:  time.Now().UTC().Add(e.RefreshTokenExpiresIn),
 		Secure:   e.Environ == string(enums.Prd),
 		Domain:   e.Domain,
 	})
