@@ -11,6 +11,7 @@ import (
 	"github.com/VinukaThejana/todoapp/internal/database"
 	pb "github.com/VinukaThejana/todoapp/pkg/todo"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"gorm.io/gorm"
@@ -38,6 +39,7 @@ func NewServer(e *env.Env, db *gorm.DB, r *redis.Client) *Server {
 func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateResponse, error) {
 	userID, err := strconv.ParseUint(req.UserId, 10, 64)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to parse user id")
 		return &pb.CreateResponse{
 			Success: false,
 		}, status.Error(codes.Internal, "failed to parse user id")
@@ -53,6 +55,7 @@ func (s *Server) Create(ctx context.Context, req *pb.CreateRequest) (*pb.CreateR
 
 	err = s.DB.Create(&todo).Error
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create the todo")
 		return &pb.CreateResponse{
 			Success: false,
 		}, status.Error(codes.Internal, "failed to create the todo")
@@ -71,6 +74,8 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 
 	err := s.DB.Where("id = ?", req.Id).First(&todo).Error
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get the todo")
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &pb.GetResponse{
 				Success: false,
@@ -100,6 +105,7 @@ func (s *Server) Get(ctx context.Context, req *pb.GetRequest) (*pb.GetResponse, 
 func (s *Server) List(ctx context.Context, req *pb.ListRequest) (*pb.ListResponse, error) {
 	userID, err := strconv.ParseUint(req.UserId, 10, 64)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to parse user id")
 		return &pb.ListResponse{
 			Todos: []*pb.Todo{},
 		}, status.Error(codes.Internal, "failed to parse user id")
@@ -109,6 +115,7 @@ func (s *Server) List(ctx context.Context, req *pb.ListRequest) (*pb.ListRespons
 
 	err = s.DB.Where("user_id = ?", userID).Find(&todos).Error
 	if err != nil {
+		log.Error().Err(err).Msg("failed to get the todos")
 		return &pb.ListResponse{
 			Todos: []*pb.Todo{},
 		}, status.Error(codes.Internal, "failed to get the todos")
@@ -136,12 +143,14 @@ func (s *Server) List(ctx context.Context, req *pb.ListRequest) (*pb.ListRespons
 func (s *Server) Update(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateResponse, error) {
 	todoID, err := strconv.ParseUint(req.Id, 10, 64)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to parse todo id")
 		return &pb.UpdateResponse{
 			Success: false,
 		}, status.Error(codes.Internal, "failed to parse todo id")
 	}
 	userID, err := strconv.ParseUint(req.UserId, 10, 64)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to parse user id")
 		return &pb.UpdateResponse{
 			Success: false,
 		}, status.Error(codes.Internal, "failed to parse user id")
@@ -165,6 +174,8 @@ func (s *Server) Update(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateR
 
 	err = s.DB.Save(&todo).Error
 	if err != nil {
+		log.Error().Err(err).Msg("failed to update the todo")
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &pb.UpdateResponse{
 				Success: false,
@@ -186,12 +197,14 @@ func (s *Server) Update(ctx context.Context, req *pb.UpdateRequest) (*pb.UpdateR
 func (s *Server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteResponse, error) {
 	todoID, err := strconv.ParseUint(req.Id, 10, 64)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to parse todo id")
 		return &pb.DeleteResponse{
 			Success: false,
 		}, status.Error(codes.Internal, "failed to parse todo id")
 	}
 	userID, err := strconv.ParseUint(req.UserId, 10, 64)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to parse user id")
 		return &pb.DeleteResponse{
 			Success: false,
 		}, status.Error(codes.Internal, "failed to parse user id")
@@ -203,6 +216,7 @@ func (s *Server) Delete(ctx context.Context, req *pb.DeleteRequest) (*pb.DeleteR
 
 	err = s.DB.Delete(&todo).Error
 	if err != nil {
+		log.Error().Err(err).Msg("failed to delete the todo")
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &pb.DeleteResponse{
 				Success: false,
