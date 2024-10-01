@@ -41,7 +41,7 @@ func Init(
 		r.Group(func(r chi.Router) {
 			r.Use(m.RefreshTokenPresent)
 			r.Patch("/refresh", lib.WrapHandlerWAuthClient(
-				auth.Login,
+				auth.Refresh,
 				acm, e, db, rdb,
 			))
 			r.Delete("/logout", lib.WrapHandlerWAuthClient(
