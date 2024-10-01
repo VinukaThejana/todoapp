@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/VinukaThejana/todoapp/internal/api/grpc"
 	"github.com/VinukaThejana/todoapp/internal/api/handler"
@@ -56,8 +58,10 @@ func Register(
 
 	err = validate.Struct(reqBody)
 	if err != nil {
-		log.Error().Err(err)
-		handler.JSONr(w, http.StatusBadRequest, "Invalid request body")
+		log.Error().Err(err).Msg("validation failed")
+
+		validationErrs := err.(validator.ValidationErrors)
+		handler.JSONr(w, http.StatusBadRequest, fmt.Sprintf("Please provide a valid %s", strings.ToLower(validationErrs[0].Field())))
 		return
 	}
 
