@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/rs/zerolog/log"
 )
 
 // ValidateUsername is a custom validator for validating username
@@ -22,10 +23,12 @@ func ValidateUsername(fl validator.FieldLevel) bool {
 	return regex.MatchString(username)
 }
 
-// ValiateEmailOrUsername is a custom validator for validating email or username
-func ValiateEmailOrUsername(fl validator.FieldLevel) bool {
+// ValidateEmailOrUsername is a custom validator for validating email or username
+func ValidateEmailOrUsername(fl validator.FieldLevel) bool {
 	username := fl.Parent().FieldByName("Username").String()
 	email := fl.Parent().FieldByName("Email").String()
+
+	log.Info().Msgf("username: %s, email: %s", username, email)
 
 	if username == "" && email == "" {
 		return false

@@ -38,7 +38,7 @@ func init() {
 	rdb = rdbc.Init(e)
 	isProd := e.Environ == string(enums.Prd)
 
-	if isProd {
+	if e.Environ == string(enums.Dev) {
 		log.Logger = log.Output(zerolog.ConsoleWriter{
 			Out: os.Stderr,
 		})

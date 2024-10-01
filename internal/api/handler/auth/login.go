@@ -33,15 +33,15 @@ func Login(
 	)
 
 	type body struct {
-		Email    string `json:"email" validate:"required,email"`
-		Username string `json:"username" validate:"required,alphanum,min=4,max=15"`
+		Email    string `json:"email"`
+		Username string `json:"username"`
 		Password string `json:"password" validate:"required,min=8,max=100,password"`
 		Validate string `validate:"validate_login"`
 	}
 
 	validate := validator.New()
 
-	validate.RegisterValidation("validate_login", lib.ValiateEmailOrUsername)
+	validate.RegisterValidation("validate_login", lib.ValidateEmailOrUsername)
 	validate.RegisterValidation("password", lib.ValidatePassword)
 
 	r.Body = http.MaxBytesReader(w, r.Body, maxRequestBodySize)
@@ -64,7 +64,7 @@ func Login(
 	}
 
 	var resp *auth.LoginResponse
-	if reqBody.Email != "" {
+	if reqBody.Username != "" {
 		resp, err = acm.Client().Login(r.Context(), &auth.LoginRequest{
 			Login: &auth.LoginRequest_Username{
 				Username: reqBody.Username,
@@ -74,21 +74,22 @@ func Login(
 	} else {
 		resp, err = acm.Client().Login(r.Context(), &auth.LoginRequest{
 			Login: &auth.LoginRequest_Email{
-				Email: reqBody.Password,
+				Email: reqBody.Email,
 			},
 			Password: reqBody.Password,
 		})
 	}
 	if err != nil {
 		st, ok := status.FromError(err)
+		log.Error().Err(err).Msg("there is an an error somewhere")
 		if !ok {
-			log.Error().Err(err)
 			handler.JSONr(w, http.StatusInternalServerError, "Internal server error")
 			return
 		}
 
 		switch st.Code() {
 		case codes.InvalidArgument:
+			log.Error().Err(err)
 			handler.JSONr(w, http.StatusBadRequest, "Invalid request body")
 			return
 		case codes.NotFound:

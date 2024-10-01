@@ -43,7 +43,7 @@ func main() {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterAuthServiceServer(s, &auth.Server{E: e, DB: db})
+	pb.RegisterAuthServiceServer(s, &auth.Server{E: e, DB: db, R: rdb})
 
 	go func() {
 		log.Info().Msg(fmt.Sprintf("starting the auth gRPC server on port %s", e.AuthgRPCPort))

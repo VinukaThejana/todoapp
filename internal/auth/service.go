@@ -122,7 +122,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	}
 
 	at := tokens.NewAccessToken(s.E, s.DB, s.R)
-	accessToken, err := at.Create(ctx, user.ID, refreshToken.AccessTokenJTI)
+	accessToken, err := at.Create(ctx, user.ID, refreshToken.JTI, refreshToken.AccessTokenJTI)
 	if err != nil {
 		return &pb.LoginResponse{
 			Success: false,
