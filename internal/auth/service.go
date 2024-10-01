@@ -11,6 +11,7 @@ import (
 	rdb "github.com/VinukaThejana/todoapp/internal/redis"
 	pb "github.com/VinukaThejana/todoapp/pkg/auth"
 	"github.com/redis/go-redis/v9"
+	"github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -44,6 +45,7 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to hash the password")
 		return &pb.RegisterResponse{
 			Success: false,
 			Message: "Failed to hash the password",
@@ -53,6 +55,8 @@ func (s *Server) Register(ctx context.Context, req *pb.RegisterRequest) (*pb.Reg
 
 	err = s.DB.Create(&user).Error
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create the user")
+
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return &pb.RegisterResponse{
 				Success: false,
@@ -91,6 +95,8 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	}
 
 	if err != nil {
+		log.Error().Err(err).Msg("failed to find the user")
+
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return &pb.LoginResponse{
 				Success: false,
@@ -106,6 +112,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password))
 	if err != nil {
+		log.Error().Err(err).Msg("not a valid password")
 		return &pb.LoginResponse{
 			Success: false,
 			Message: "Invalid password",
@@ -115,6 +122,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	rt := tokens.NewRefreshToken(s.E, s.DB, s.R)
 	refreshToken, err := rt.Create(ctx, user.ID)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create the refresh token")
 		return &pb.LoginResponse{
 			Success: false,
 			Message: "Failed to create refresh token",
@@ -124,6 +132,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	at := tokens.NewAccessToken(s.E, s.DB, s.R)
 	accessToken, err := at.Create(ctx, user.ID, refreshToken.JTI, refreshToken.AccessTokenJTI)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create the access token")
 		return &pb.LoginResponse{
 			Success: false,
 			Message: "Failed to create access token",
@@ -133,6 +142,7 @@ func (s *Server) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResp
 	st := tokens.NewSessionToken(s.E, s.DB)
 	sessionToken, err := st.Create(ctx, user.ID, user.Email, user.Username, user.Name)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create the session token")
 		return &pb.LoginResponse{
 			Success: false,
 			Message: "Failed to create session token",
@@ -156,6 +166,7 @@ func (s *Server) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refre
 	rt := tokens.NewRefreshToken(s.E, s.DB, s.R)
 	rtd, err := rt.Validate(ctx, req.RefreshToken)
 	if err != nil {
+		log.Error().Err(err).Msg("invalid refresh token")
 		return &pb.RefreshResponse{
 			Success: false,
 			Message: "Invalid refresh token",
@@ -165,6 +176,7 @@ func (s *Server) Refresh(ctx context.Context, req *pb.RefreshRequest) (*pb.Refre
 	at := tokens.NewAccessToken(s.E, s.DB, s.R)
 	accessToken, err := at.Create(ctx, rtd.Sub, rtd.JTI)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to create the access token")
 		return &pb.RefreshResponse{
 			Success: false,
 			Message: "Failed to create access token",
@@ -184,6 +196,7 @@ func (s *Server) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutR
 	rt := tokens.NewRefreshToken(s.E, s.DB, s.R)
 	rtd, err := rt.Validate(ctx, req.RefreshToken)
 	if err != nil {
+		log.Error().Err(err).Msg("invalid refresh token")
 		return &pb.LogoutResponse{
 			Success: false,
 			Message: "Invalid refresh token",
@@ -203,6 +216,7 @@ func (s *Server) Logout(ctx context.Context, req *pb.LogoutRequest) (*pb.LogoutR
 	pipe.Del(ctx, rdb.AccessTokenKey(val))
 	_, err = pipe.Exec(ctx)
 	if err != nil {
+		log.Error().Err(err).Msg("failed to delete tokens")
 		return &pb.LogoutResponse{
 			Success: false,
 			Message: "Failed to delete tokens",
@@ -221,6 +235,7 @@ func (s *Server) Validate(ctx context.Context, req *pb.ValidateRequest) (*pb.Val
 	at := tokens.NewAccessToken(s.E, s.DB, s.R)
 	atd, err := at.Validate(ctx, req.AccessToken)
 	if err != nil {
+		log.Error().Err(err).Msg("invalid access token")
 		return &pb.ValidateResponse{
 			Success: false,
 			IsValid: false,
