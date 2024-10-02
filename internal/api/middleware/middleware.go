@@ -7,11 +7,14 @@ import (
 	"strings"
 
 	"github.com/VinukaThejana/todoapp/internal/api/grpc"
+	env "github.com/VinukaThejana/todoapp/internal/config"
 	"github.com/VinukaThejana/todoapp/pkg/auth"
 	"github.com/bytedance/sonic"
+	"github.com/redis/go-redis/v9"
 	"github.com/rs/zerolog/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"gorm.io/gorm"
 )
 
 const (
@@ -59,14 +62,15 @@ func RefreshTokenPresent(next http.Handler) http.Handler {
 
 // Auth is a middleware that validates the access token and assigns the user id of the requesting
 // user to the context if the access token is valid.
-func Auth(next http.Handler, acm *grpc.AuthClientManager) http.Handler {
+func Auth(next http.Handler, acm *grpc.AuthClientManager, e *env.Env, db *gorm.DB, rdb *redis.Client) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		authToken := r.Header.Get("Authorization")
-		if authToken == "" {
+		header := r.Header.Get("Authorization")
+		if !strings.HasPrefix(header, "Bearer ") {
 			log.Error().Msg("auth token not present")
 			w.WriteHeader(http.StatusUnauthorized)
 			return
 		}
+		authToken := strings.TrimPrefix(header, "Bearer ")
 
 		res, err := acm.Client().Validate(r.Context(), &auth.ValidateRequest{
 			AccessToken: authToken,
