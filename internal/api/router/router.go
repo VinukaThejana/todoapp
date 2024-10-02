@@ -4,6 +4,7 @@ package router
 import (
 	"github.com/VinukaThejana/todoapp/internal/api/grpc"
 	"github.com/VinukaThejana/todoapp/internal/api/handler/auth"
+	"github.com/VinukaThejana/todoapp/internal/api/handler/todo"
 	m "github.com/VinukaThejana/todoapp/internal/api/middleware"
 	env "github.com/VinukaThejana/todoapp/internal/config"
 	"github.com/VinukaThejana/todoapp/internal/lib"
@@ -49,6 +50,18 @@ func Init(
 				acm, e, db, rdb,
 			))
 		})
+	})
+
+	r.Route("/todo", func(r chi.Router) {
+		r.Use(lib.WrapMiddlewareWAuth(
+			m.Auth,
+			acm, e, db, rdb,
+		))
+
+		r.Post("/create", lib.WrapHandlerWTodoClient(
+			todo.Create,
+			tcm, e, db, rdb,
+		))
 	})
 
 	return r
