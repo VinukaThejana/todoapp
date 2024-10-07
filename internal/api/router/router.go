@@ -58,6 +58,10 @@ func Init(
 			acm, e, db, rdb,
 		))
 
+		r.Get("/list", lib.WrapHandlerWTodoClient(
+			todo.List,
+			tcm, e, db, rdb,
+		))
 		r.Post("/create", lib.WrapHandlerWTodoClient(
 			todo.Create,
 			tcm, e, db, rdb,
