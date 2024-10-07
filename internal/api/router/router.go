@@ -66,6 +66,10 @@ func Init(
 			todo.Update,
 			tcm, e, db, rdb,
 		))
+		r.Delete("/delete", lib.WrapHandlerWTodoClient(
+			todo.Delete,
+			tcm, e, db, rdb,
+		))
 	})
 
 	return r
