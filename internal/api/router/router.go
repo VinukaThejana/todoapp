@@ -62,6 +62,10 @@ func Init(
 			todo.Create,
 			tcm, e, db, rdb,
 		))
+		r.Post("/update", lib.WrapHandlerWTodoClient(
+			todo.Update,
+			tcm, e, db, rdb,
+		))
 	})
 
 	return r
