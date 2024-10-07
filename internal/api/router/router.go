@@ -58,6 +58,10 @@ func Init(
 			acm, e, db, rdb,
 		))
 
+		r.Get("/{id}", lib.WrapHandlerWTodoClient(
+			todo.Get,
+			tcm, e, db, rdb,
+		))
 		r.Get("/list", lib.WrapHandlerWTodoClient(
 			todo.List,
 			tcm, e, db, rdb,
